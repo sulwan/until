@@ -18,7 +18,7 @@ import (
 const (
 
 	// RSAAlgorithmSign RSA签名算法
-	RSAAlgorithmSign = crypto.SHA256
+	RSAAlgorithmSign = crypto.SHA1
 )
 
 // NewRSAFile 生成密钥对文件
