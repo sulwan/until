@@ -7,9 +7,9 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/asn1"
-	"encoding/base64"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -215,27 +215,36 @@ func (r *GoRSA) PrivateDecrypt(encrypted []byte) ([]byte, error) {
 }
 
 // Sign 数据进行签名
-func (r *GoRSA) Sign(data string) (string, error) {
-	h := RSAAlgorithmSign.New()
-	h.Write([]byte(data))
-	hashed := h.Sum(nil)
+func (r *GoRSA) Sign(data string) ([]byte, error) {
+	// h := RSAAlgorithmSign.New()
+	// h.Write([]byte(data))
+	// hashed := h.Sum(nil)
+	messageBytes := bytes.NewBufferString(data)
+	hash := RSAAlgorithmSign.New()
+	hash.Write(messageBytes.Bytes())
+	hashed := hash.Sum(nil)
 	sign, err := rsa.SignPKCS1v15(rand.Reader, r.PrivateKey, RSAAlgorithmSign, hashed)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return base64.RawURLEncoding.EncodeToString(sign), err
+	return sign, err
 }
 
 // Verify 数据验证签名
 func (r *GoRSA) Verify(data string, sign string) error {
-	h := RSAAlgorithmSign.New()
-	h.Write([]byte(data))
-	hashed := h.Sum(nil)
-	decodedSign, err := base64.RawURLEncoding.DecodeString(sign)
+	fmt.Println(data)
+	messageBytes := bytes.NewBufferString(data)
+	hash := RSAAlgorithmSign.New()
+	hash.Write(messageBytes.Bytes())
+	hashed := hash.Sum(nil)
+	fmt.Println("------------获取签名------")
+	fmt.Println(sign)
+	// decodedSign, err := base64.URLEncoding.DecodeString(sign)
+	decodedSign, err := base64DecodeStripped(sign)
 	if err != nil {
 		return err
 	}
-	return rsa.VerifyPKCS1v15(r.PublicKey, RSAAlgorithmSign, hashed, decodedSign)
+	return rsa.VerifyPKCS1v15(r.PublicKey, RSAAlgorithmSign, hashed, []byte(decodedSign))
 }
 
 // MarshalPKCS8PrivateKey 私钥解析

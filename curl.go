@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,11 +12,8 @@ import (
 )
 
 func PostData(post_data interface{}, sinapay_url string) (result map[string]interface{}, err error) {
-
 	excludeSlice := []string{"sign", "sign_type", "sign_version"}
 	splice := QueryStr(post_data, true, excludeSlice)
-
-	fmt.Println(splice)
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}

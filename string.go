@@ -6,10 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"net/url"
-	"reflect"
-	"sort"
-	"strconv"
 	"strings"
 
 	"golang.org/x/crypto/scrypt"
@@ -71,78 +67,15 @@ func CryptPassword(password, salt string) string {
 
 // 简化Base64
 func Base64Encode(data []byte) string {
-	return base64.StdEncoding.EncodeToString(data)
+	return base64.RawURLEncoding.EncodeToString(data)
+	// return base64.StdEncoding.EncodeToString(data)
 }
 
-// 结构体拼接字符串
-func QueryStr(query_balance_post interface{}, upost bool, slice []string) string {
-	var splice string
-	var post_string []string
-	t := reflect.TypeOf(query_balance_post)
-	v := reflect.ValueOf(query_balance_post)
-	for i := 0; i < v.NumField(); i++ {
-		if v.Field(i).Type().Kind() == reflect.Struct {
-			structField := v.Field(i).Type()
-			for j := 0; j < structField.NumField(); j++ {
-				str := structField.Field(j).Name
-				if upost {
-					post_string = append(post_string, str)
-				} else {
-					if !InStringSlice(str, slice) {
-						post_string = append(post_string, str)
-					}
-				}
-			}
-			continue
-		}
-		post_string = append(post_string, t.Field(i).Name)
+// JAVA解码需要
+func base64DecodeStripped(s string) (string, error) {
+	if i := len(s) % 4; i != 0 {
+		s += strings.Repeat("=", 4-i)
 	}
-	sort.Strings(post_string)
-	for _, vel := range post_string {
-		t := v.FieldByName(vel)
-		t_string := formatAtom(t)
-		if len(t_string) > 2 {
-			if !upost {
-				splice = splice + vel + "=" + t_string + "&"
-			} else {
-				splice = splice + vel + "=" + url.QueryEscape(t_string) + "&"
-			}
-		}
-	}
-	splice = strings.Trim(splice, "&")
-	splice = strings.Replace(splice, "%22", "", -1)
-	splice = strings.Replace(splice, "\"", "", -1)
-	if upost {
-		// fmt.Println("--------------提交字符串-------------")
-		// fmt.Println(splice)
-	} else {
-		// fmt.Println("--------------签名字符串-------------")
-		splice = strings.Replace(splice, "\"", "", -1)
-	}
-	return splice
-}
-
-// 根据反射类型进行转换
-func formatAtom(v reflect.Value) string {
-	switch v.Kind() {
-	case reflect.Invalid:
-		return "invalid"
-	case reflect.Int, reflect.Int8, reflect.Int16,
-		reflect.Int32, reflect.Int64:
-		return strconv.FormatInt(v.Int(), 10)
-	case reflect.Uint, reflect.Uint8, reflect.Uint16,
-		reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		return strconv.FormatUint(v.Uint(), 10)
-	case reflect.Bool:
-		return strconv.FormatBool(v.Bool())
-	case reflect.String:
-		return strconv.Quote(v.String())
-	case reflect.Chan, reflect.Func, reflect.Ptr, reflect.Slice, reflect.Map:
-		return v.Type().String() + " 0x" +
-			strconv.FormatUint(uint64(v.Pointer()), 16)
-	case reflect.Float32:
-		return strconv.FormatFloat(v.Float(), 'f', 2, 32)
-	default:
-		return v.Type().String() + " value"
-	}
+	decoded, err := base64.StdEncoding.DecodeString(s)
+	return string(decoded), err
 }

@@ -1,5 +1,11 @@
 package until
 
+import (
+	"bytes"
+	"fmt"
+	"sort"
+)
+
 // MergeMap 合并两个map[int]int
 func MergeMap(args ...map[int]int) map[int]int {
 	mergedMap := map[int]int{}
@@ -59,4 +65,25 @@ func GetMapValues(m map[int]int) []int {
 		values = append(values, v)
 	}
 	return values
+}
+
+func Urlencode(data map[string]interface{}, slice []string) string {
+	var buf bytes.Buffer
+	var post_string []string
+	for k, _ := range data {
+		str := fmt.Sprintf("%s", k)
+		if !InStringSlice(str, slice) {
+			post_string = append(post_string, fmt.Sprintf("%s", k))
+		}
+	}
+	sort.Strings(post_string)
+
+	for _, vel := range post_string {
+		buf.WriteString(vel)
+		buf.WriteByte('=')
+		buf.WriteString(fmt.Sprintf("%s", data[vel]))
+		buf.WriteByte('&')
+	}
+	s := buf.String()
+	return s[0 : len(s)-1]
 }
