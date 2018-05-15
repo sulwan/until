@@ -231,7 +231,6 @@ func (c *Client) Upload(local, remote string) error {
 		return err
 	}
 	defer localFile.Close()
-
 	remoteFile, err := client.Create(remote)
 	if err != nil {
 		return err
