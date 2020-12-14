@@ -2,10 +2,10 @@ package until
 
 import (
 	"fmt"
-
-	uuid "github.com/satori/go.uuid"
+    "github.com/google/uuid"
 )
 
 func UidString() string {
-	return Md5Sum(fmt.Sprintf("%s", uuid.Must(uuid.NewV4())))
+	v1, _ := uuid.NewUUID()
+	return Md5Sum(fmt.Sprintf("%s", v1))
 }
